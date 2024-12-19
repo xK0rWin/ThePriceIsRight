@@ -24,17 +24,6 @@ public class TestDataInitializer {
     @Bean
     public CommandLineRunner initTestData() {
         return args -> {
-
-            Player p1 = new Player("Kevin");
-            playerRepository.save(p1);
-
-            Player p2 = new Player("Admin");
-            playerRepository.save(p2);
-
-            Item item1 = new Item("Laptop","https://cdn.pixabay.com/photo/2023/01/08/18/11/plants-7705865_1280.jpg", "OPEN",  232.);
-            itemRepository.save(item1);
-
-            System.out.println("Test data initialized");
         };
     }
 }
