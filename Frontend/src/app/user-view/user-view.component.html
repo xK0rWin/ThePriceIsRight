@@ -1,0 +1,38 @@
+<div *ngIf="votingActive">
+  <div class="container mt-5" *ngIf="!hasSubmitted">
+    <h2>Der Preis ist Heiss</h2>
+    <form (ngSubmit)="onSubmit()" #guessForm="ngForm">
+      <div class="form-group">
+        <label for="price">Deine Schätzung für <b>{{activeItemName}}</b></label>
+        <input
+          type="number"
+          id="price"
+          class="form-control"
+          required
+          [(ngModel)]="priceGuess"
+          name="price"
+          placeholder="Preis in €"
+        />
+      </div>
+      <div>{{message}}</div>
+      <button type="submit" class="btn btn-primary mt-3" [disabled]="priceGuess === null">Abstimmen</button>
+    </form>
+  </div>
+  <div *ngIf="hasSubmitted">
+    <div class="waiting-screen">
+      <div class="waiting-container">
+        <div class="spinner"></div>
+        <h2>Abstimmung läuft. Deine Schätzung: {{priceGuess | currency:'EUR'}}</h2>
+      </div>
+    </div>
+  </div>
+</div>
+<div *ngIf="!votingActive">
+  <div class="waiting-screen">
+    <div class="waiting-container">
+      <div class="spinner"></div>
+      <h2 class="waiting-message">Voting startet in kürze. Bitte warten...</h2>
+    </div>
+  </div>
+</div>
+  

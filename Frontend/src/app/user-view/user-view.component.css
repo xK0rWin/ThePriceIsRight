@@ -1,0 +1,44 @@
+/* Full-screen waiting screen */
+.waiting-screen {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f8f9fa;
+    color: #343a40;
+    font-family: Arial, sans-serif;
+  }
+  
+  /* Center container */
+  .waiting-container {
+    text-align: center;
+  }
+  
+  /* Spinner animation */
+  .spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid #e9ecef;
+    border-top: 5px solid #007bff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 20px;
+  }
+  
+  /* Animation keyframes for spinner */
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+  
+  /* Waiting message styling */
+  .waiting-message {
+    font-size: 1.5rem;
+    font-weight: 400;
+    margin-top: 10px;
+  }
+  
