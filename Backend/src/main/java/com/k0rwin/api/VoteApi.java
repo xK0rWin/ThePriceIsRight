@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import javax.transaction.Transactional;
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -62,12 +63,17 @@ public class VoteApi {
 
     @PostMapping(value = "/register", produces = "application/json")
     public ResponseEntity<PlayerDTO> register(@RequestBody String userName) {
+        Optional<Player> px = playerRepository.findById(userName);
+        if (!px.isPresent()) {
+            Player player = new Player(userName);
+            playerRepository.save(player);
 
-        Player player = new Player(userName);
-        playerRepository.save(player);
+            sendSseEvent("newUser");
+            return new ResponseEntity<>(playerMapper.toDTO(player), HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(playerMapper.toDTO(px.get()), HttpStatus.OK);
+        }
 
-        sendSseEvent("newUser");
-        return new ResponseEntity<>(playerMapper.toDTO(player), HttpStatus.OK);
     }
 
     @GetMapping(value = "/currentVote", produces = "application/json")
@@ -105,8 +111,9 @@ public class VoteApi {
     public ResponseEntity<String> startNewVote(@PathVariable String itemName) {
 
         getActiveItem().ifPresent(item -> {
-            getActiveItem().get().setStatus("COMPLETED");
-            finishRound(getActiveItem().get());
+            Item i = getActiveItem().get();
+            finishRound(i);
+            i.setStatus("COMPLETED");
             this.itemRepository.save(getActiveItem().get());
         });
 
@@ -142,10 +149,11 @@ public class VoteApi {
         return new ResponseEntity<>(i.getId(), HttpStatus.OK);
     }
 
+    @Transactional
     @GetMapping(value = "/clear", produces = "text/plain")
     public ResponseEntity<String> clearDatabase() {
-        voteRepository.deleteAll();
         itemRepository.deleteAll();
+        voteRepository.deleteAll();
         playerRepository.deleteAll();
 
         sendSseEvent("endVote");
@@ -167,11 +175,35 @@ public class VoteApi {
             }
         });
 
-        for (int i = 0; i < 3; i++) {
-            if (votes.size() > i) {
-                Player p = votes.get(i).getPlayer();
-                p.setScore(p.getScore() + (3 - i));
+        out: for (int i = 0; i < votes.size(); i++) {
+            Vote vote = votes.get(i);
+            if (Objects.equals(vote.getPriceGuess(), ix.getPrice())) {
+                Player p = vote.getPlayer();
+                p.setScore(p.getScore() + 3);
                 playerRepository.save(p);
+            } else {
+                Player p = vote.getPlayer();
+                if (i < 3) {
+                    if (i > 0) {
+                        Vote prevVote = votes.get(i - 1);
+                        if (Objects.equals(vote.getPriceGuess(), prevVote.getPriceGuess())) {
+                            p.setScore(p.getScore() + (3 - i + 1));
+                        } else {
+                            p.setScore(p.getScore() + (3 - i));
+                        }
+                    } else {
+                        p.setScore(p.getScore() + (3 - i));
+                    }
+                    playerRepository.save(p);
+                } else {
+                    Vote prevVote = votes.get(i - 1);
+                    if (Objects.equals(vote.getPriceGuess(), prevVote.getPriceGuess())) {
+                        p.setScore(p.getScore() + 1);
+                        playerRepository.save(p);
+                    } else {
+                        break out;
+                    }
+                }
             }
         }
     }

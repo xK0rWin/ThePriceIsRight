@@ -3,6 +3,8 @@ package com.k0rwin.entity;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import javax.persistence.*;
 
@@ -23,6 +25,7 @@ public class Vote {
     private Player player;
     @ManyToOne
     @JoinColumn(name = "item_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Item item;
 
     public Vote(Double priceGuess, Player player, Item item) {
